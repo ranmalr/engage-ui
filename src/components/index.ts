@@ -68,3 +68,8 @@ export {
   default as Picker,
   Props as PickerProps,
 } from './Picker';
+
+export {
+  default as TreeView,
+  Props as TreeViewProps,
+} from './TreeView';
