@@ -44,8 +44,7 @@ class App extends React.Component<{}, State> {
     return (
       <div>
 
-        <TreeView/>
-
+        <TreeView data={[{id: 1, children: [], display: 'r', expanded: false, icon: ''}]} selectedId={[]} collapseAll={true} expandAll={true}/>
 
         <Picker required={true}
           chipComponent={Chip}

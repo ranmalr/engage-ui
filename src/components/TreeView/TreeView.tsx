@@ -1,22 +1,31 @@
 import * as React from 'react';
 import { ITreeViewData } from './ITreeViewData';
+
+export interface State {
+    viewData: ITreeViewData[],
+}
 export interface Props {
     data: ITreeViewData[],
     collapseAll?: boolean,
     expandAll?: boolean,
-    selectedId?: number[],
-    onSelect?(node: ITreeViewData): void,
+    selectedId: number[],
+    onSelect?(node: ITreeViewData): any,
 }
 
-class TreeView extends React.Component<Props, {}> {
+class TreeView extends React.Component<Props, State> {
     constructor(props: any) {
         super(props);
+        this.state = {
+            viewData: this.props.data,
+        };
     }
     render() {
         const {
             data,
             collapseAll = false,
             expandAll = false,
+            selectedId,
+            onSelect = this.handleNodeClick,
         } = this.props;
         let collapseEle = null;
         if (collapseAll) {
@@ -26,9 +35,24 @@ class TreeView extends React.Component<Props, {}> {
         if (expandAll) {
             expandedEle = <li><a onClick={this.handleExpand}>Expand All</a></li>;
         }
+        function createNode(data: ITreeViewData): any {
+            const liItem = <a id={data.id.toString()} onClick={onSelect.bind(data)}>{data.display}</a>;
+            let className = '';
+            if (data.expanded) {
+                className += 'expanded';
+            }
+            if (data.icon) {
+                className += 'icon';
+            }
+            if (selectedId.some((x: number) => x === data.id)) {
+                className += 'selected';
+            }
+            const nodeHtml = <li key={data.id} id={data.id.toString()} className={className}>{liItem}</li>;
+            return nodeHtml;
+        }
         let liNode = null;
         data.map(function(i) {
-            liNode = this.createNode(i);
+            liNode = createNode(i);
         });
         return (
             <div>
@@ -39,43 +63,28 @@ class TreeView extends React.Component<Props, {}> {
                         <li><a onClick={this.handleToggle}>Toggle All</a></li>
                     </ul>
                 </div>
-                <div> 
+                <div>
                     <ul>
                         {liNode}
                     </ul>
                 </div>
             </div>
         );
-
     }
-
-    private createNode = (data: ITreeViewData) => {
-        const liItem = <a onClick={this.handleNodeClick(data)}>{data.display}</a>;
-        let className = '';
-        if (data.expanded) {
-            className += 'expanded';
-        }
-        if (data.icon) {
-            className += 'icon';
-        }
-        if (this.props.selectedId.some((x) => x === data.id)) {
-            className += 'selected';
-        }
-        const nodeHtml = <li key={data.id} id={data.id.toString()} className={className}>{liItem}</li>;
-        return nodeHtml;
-    }
-
     private handleNodeClick = (node: ITreeViewData): any => {
-        alert(node);
+        alert('r');
         return;
     }
     private handleCollapse = () => {
+        alert('r');
         return;
     }
     private handleExpand = () => {
+        alert('r');
         return;
     }
     private handleToggle = () => {
+        alert('r');
         return;
     }
 }
