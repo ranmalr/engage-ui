@@ -1,15 +1,21 @@
 import * as React from 'react';
 import { ITreeViewData } from './ITreeViewData';
 
+export enum TreeNodeState {
+    Toggle,
+    Expand,
+    Collapse,
+}
 export interface State {
     viewData: ITreeViewData[],
+    viewSelected: number[],
 }
 export interface Props {
     data: ITreeViewData[],
     collapseAll?: boolean,
     expandAll?: boolean,
     selectedId: number[],
-    onSelect?(node: ITreeViewData): any,
+    onSelect?(node: ITreeViewData): void,
 }
 
 class TreeView extends React.Component<Props, State> {
@@ -17,14 +23,13 @@ class TreeView extends React.Component<Props, State> {
         super(props);
         this.state = {
             viewData: this.props.data,
+            viewSelected: this.props.selectedId,
         };
     }
     render() {
         const {
-            data,
             collapseAll = false,
             expandAll = false,
-            selectedId,
             onSelect = this.handleNodeClick,
         } = this.props;
         let collapseEle = null;
@@ -35,24 +40,28 @@ class TreeView extends React.Component<Props, State> {
         if (expandAll) {
             expandedEle = <li><a onClick={this.handleExpand}>Expand All</a></li>;
         }
-        function createNode(data: ITreeViewData): any {
-            const liItem = <a id={data.id.toString()} onClick={onSelect.bind(data)}>{data.display}</a>;
+        function createNode(data: ITreeViewData, viewSelected: number[]): any {
             let className = '';
             if (data.expanded) {
                 className += 'expanded';
             }
             if (data.icon) {
-                className += 'icon';
+                className += ' icon';
             }
-            if (selectedId.some((x: number) => x === data.id)) {
-                className += 'selected';
+            if (viewSelected.some((x: number) => x === data.id)) {
+                className += ' selected';
             }
-            const nodeHtml = <li key={data.id} id={data.id.toString()} className={className}>{liItem}</li>;
+            const childData = data.children as ITreeViewData[];
+            let childrenNode = null;
+            childrenNode = childData.map(function(i) {
+                return (<ul key={i.id}>{createNode(i, viewSelected)}</ul>);
+            });
+            const nodeHtml = <li key={data.id} id={data.id.toString()} className={className}><a id={data.id.toString()} onClick={onSelect.bind(this, data)}>{data.display}</a>{childrenNode}</li>;
             return nodeHtml;
         }
-        let liNode = null;
-        data.map(function(i) {
-            liNode = createNode(i);
+        const selectedNode = this.state.viewSelected;
+        const liNode = this.state.viewData.map(function(i) {
+            return (createNode(i, selectedNode));
         });
         return (
             <div>
@@ -71,22 +80,78 @@ class TreeView extends React.Component<Props, State> {
             </div>
         );
     }
-    private handleNodeClick = (node: ITreeViewData): any => {
-        alert('r');
+    private handleNodeClick = (node: ITreeViewData): void => {
+        const selectedNode = this.state.viewSelected;
+        if (selectedNode.some((x) => x === node.id)) {
+            const index = selectedNode.indexOf(node.id, 0);
+            if (index > -1) {
+                selectedNode.splice(index, 1);
+            }
+            this.setState({ ['viewSelected']: selectedNode });
+        } else {
+            selectedNode.push(node.id);
+            this.setState({ ['viewSelected']: selectedNode });
+        }
+        const treeData = this.state.viewData;
+        treeData.map(function(i) {
+            findNode(i, node);
+        });
+        this.setState({ ['viewData']: treeData });
         return;
     }
     private handleCollapse = () => {
-        alert('r');
+        const treeData = this.state.viewData;
+        treeData.map(function(i) {
+            changeNode(i, TreeNodeState.Collapse);
+        });
+        this.setState({ ['viewData']: treeData });
         return;
     }
     private handleExpand = () => {
-        alert('r');
+        const treeData = this.state.viewData;
+        treeData.map(function(i) {
+            changeNode(i, TreeNodeState.Expand);
+        });
+        this.setState({ ['viewData']: treeData });
         return;
     }
     private handleToggle = () => {
-        alert('r');
+        const treeData = this.state.viewData;
+        treeData.map(function(i) {
+            changeNode(i, TreeNodeState.Toggle);
+        });
+        this.setState({ ['viewData']: treeData });
         return;
     }
 }
-
+function findNode(data: ITreeViewData, node: ITreeViewData) {
+    if (data.id === node.id) {
+        data.expanded = !node.expanded;
+    } else {
+        const childData = data.children as ITreeViewData[];
+        childData.map(function(i) {
+            findNode(i, node);
+        });
+    }
+};
+function changeNode(data: ITreeViewData, nodeState: TreeNodeState) {
+    switch (nodeState) {
+        case TreeNodeState.Collapse:
+            data.expanded = false;
+            break;
+        case TreeNodeState.Expand:
+            data.expanded = true;
+            break;
+        case TreeNodeState.Toggle:
+            data.expanded = !data.expanded;
+            break;
+        default:
+            data.expanded = !data.expanded;
+            break;
+    }
+    const childData = data.children as ITreeViewData[];
+    childData.map(function(i) {
+        changeNode(i, nodeState);
+    });
+};
 export default TreeView;

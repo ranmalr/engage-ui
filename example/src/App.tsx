@@ -2,6 +2,7 @@ import * as React from 'react';
 import { FlexAlign, FlexDirection, FlexJustify } from '../../src/components/FlexBox/FlexProps';
 import { PeoplePickerSearchType } from '../../src/components/Picker/PickerEnum';
 import { PeoplePickerSource } from './PickerSource';
+import { TreeViewData, selectedId } from './TreeViewSource';
 
 import {
   Button,
@@ -44,7 +45,7 @@ class App extends React.Component<{}, State> {
     return (
       <div>
 
-        <TreeView data={[{id: 1, children: [], display: 'r', expanded: false, icon: ''}]} selectedId={[]} collapseAll={true} expandAll={true}/>
+        <TreeView data={TreeViewData} selectedId={selectedId} collapseAll={true} expandAll={true}/>
 
         <Picker required={true}
           chipComponent={Chip}
